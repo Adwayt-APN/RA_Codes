@@ -2,6 +2,7 @@ import DBSETUP
 import adafruit_shtc3
 from datetime import datetime
 import math, struct, array, time, io, fcntl
+import board
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
 sht = adafruit_shtc3.SHTC3(i2c)
