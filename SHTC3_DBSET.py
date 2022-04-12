@@ -71,8 +71,6 @@ class T6713(object):
 		buffer = array.array('B', data)
 		return buffer[3]*256+buffer[3]
 
-
-
 while True:
   temp, hum = sht.measurements
   obj = T6713()
@@ -82,5 +80,5 @@ while True:
   time.sleep(1)	
   DBSETUP.ganacheLogger(float(hum), "Humidity_Office_1", "%", "MAC_Office_1", "unit_descrip_OFFICE_1", "SHTC3_OFFICE_1", "Sensirion")
   DBSETUP.ganacheLogger(float(temp), "Temperature_Office_1", "C", "MAC_Office_1", "unit_descrip_OFFICE_1", "SHTC3_OFFICE_1", "Sensirion")
-  DBSETUP.ganacheLogger(float(obj.gasPPM()), "CO2_Reading_PPM_RPi_1", "PPM_RPi_1", "MAC_Add_Addy_Rpi_1", "co2_t6713_RPi", "T6713_Rpi", "Telaire")
+  DBSETUP.ganacheLogger(float(obj.gasPPM()), "CO2_Reading_Office_1", "PPM_RPi_Office_1", "MAC_Add_Addy_Rpi_Office_1", "co2_Office_1", "T6713_Office_1", "Telaire")
   time.sleep(1)
