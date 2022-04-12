@@ -79,8 +79,7 @@ async def main():
         try:
             time.sleep(1)
             
-            ganacheLogger(float(on_off_status), "ON-OFF STATUS", "0/1", "MAC_Add_Addy_Rpi_1", "ON_OFF", "KASA", "KASA")	
-            ganacheLogger(float(humidity), "Humidity_RPi_1", "%", "MAC_Add_Addy_Rpi_1", "Hum_shtc3", "SHTC3", "SparkFun")
+            ganacheLogger(float(on_off_status), "ON-OFF STATUS", "0/1", "MAC_Add_Addy_Rpi_1", "ON_OFF", "KASA", "KASA")
         except RuntimeError as error:
             # Errors happen fairly often, DHT's are hard to read, just keep going
             print(error.args[0])
