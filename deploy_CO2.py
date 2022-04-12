@@ -116,7 +116,7 @@ def main():
             time.sleep(1)
             obj = T6713()
             print("CO2 Reading in PPM: ", obj.gasPPM())
-            ganacheLogger(float(obj.gasPPM()), "CO2_Reading_PPM_RPi_1", "PPM", "MAC_Add_Addy_Rpi_1", "co2_t6713", "T6713", "Telaire")	
+            ganacheLogger(float(obj.gasPPM()), "CO2_Reading_PPM_RPi_1", "PPM", "MAC_Add_Addy_Rpi_1", "co2_t6713_RPi", "T6713_Rpi", "Telaire")	
         except RuntimeError as error:
             # Errors happen fairly often, DHT's are hard to read, just keep going
             print(error.args[0])
