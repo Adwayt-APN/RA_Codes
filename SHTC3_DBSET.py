@@ -79,7 +79,7 @@ while True:
   print("C: ", temp)
   print("%: ", hum)
   time.sleep(1)	
-  DBSETUP.ganacheLogger(float(hum), "Humidity_Office_1", "%", "MAC_Office_1", "unit_descrip_OFFICE_1", "SHTC3_OFFICE_1", "Sensirion")
   DBSETUP.ganacheLogger(float(temp), "Temperature_Office_1", "C", "MAC_Office_1", "unit_descrip_OFFICE_1", "SHTC3_OFFICE_1", "Sensirion")
   DBSETUP.ganacheLogger(float(obj.gasPPM()), "CO2_Reading_Office_1", "PPM_RPi_Office_1", "MAC_Add_Addy_Rpi_Office_1", "co2_Office_1", "T6713_Office_1", "Telaire")
+  DBSETUP.ganacheLogger(float(hum), "Humidity_Office_1", "%", "MAC_Office_1", "unit_descrip_OFFICE_1", "SHTC3_OFFICE_1", "Sensirion")
   time.sleep(1)
