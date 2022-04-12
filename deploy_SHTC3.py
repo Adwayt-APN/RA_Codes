@@ -60,17 +60,13 @@ def main():
             temperature = sht.temperature
             humidity = sht.relative_humidity
             print("Temperature: ", temperature, "c Humidity: ", humidity,"%")
-            ganacheLogger(float(temperature), "Temperature_RPi_1", "C", "MAC_Add_Addy_Rpi_1", "Temp_shtc3", "SHTC3", "SparkFun")	
-            ganacheLogger(float(humidity), "Humidity_RPi_1", "%", "MAC_Add_Addy_Rpi_1", "Hum_shtc3", "SHTC3", "SparkFun")
+            ganacheLogger(float(temperature), "Temperature_RPi_1", "C", "MAC_Add_Addy_Rpi_1", "Temp_shtc3_Rpi_1", "SHTC3_Rpi_1", "SparkFun")	
+            ganacheLogger(float(humidity), "Humidity_RPi_1", "%", "MAC_Add_Addy_Rpi_1", "Hum_shtc3_Rpi_1", "SHTC3_RPi_1", "SparkFun")
         except RuntimeError as error:
             # Errors happen fairly often, DHT's are hard to read, just keep going
             print(error.args[0])
             time.sleep(2.0)
             continue
-        except Exception as error:
-            dhtDevice.exit()
-            raise error
-    print("Ending session and closing connection... Goodbye!")
     
 
 if __name__ == "__main__":
