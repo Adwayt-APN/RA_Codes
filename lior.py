@@ -15,6 +15,9 @@ import subprocess
 # for the leds and buttons
 import RPi.GPIO as GPIO # Import RPi.GPIO library
 
+
+global IP, CPU, MemUsage, Disk, temperature, relative_humidity, obj_6713, sps, cur_panel
+
 GPIO.setwarnings(False)
 
 GPIO.setmode(GPIO.BCM)
@@ -326,7 +329,7 @@ def saveResults():
 	DBSETUP.ganacheLogger(float(sps.dict_values['nc10p0']), "AQ_NC10", "1/cm3", "MAC_AQ_9", "unit_descrip", "SPS30", "Sensirion")
 	DBSETUP.ganacheLogger(float(sps.dict_values['typical']), "AQ_NC0_TYPICAL", "µm", "MAC_AQ_10", "unit_descrip", "SPS30", "Sensirion")
 
-global IP, CPU, MemUsage, Disk, temperature, relative_humidity, obj_6713, sps, cur_panel
+
 # Global vars
 cmd = "hostname -I | cut -d\' \' -f1"
 IP = subprocess.check_output(cmd, shell = True )
