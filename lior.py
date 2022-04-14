@@ -76,6 +76,7 @@ class led:
 
 	def set_led(self, state):
 		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(self.led_pin, GPIO.OUT)
 		GPIO.output(self.led_pin, state)
 
 class btn:
