@@ -67,6 +67,7 @@ DB_SAMPLE_PERIOD = 10 # Write the samples to the DB every DB_SAMPLE_PERIOD secon
 # GPIO classes: led & btn
 class led:
 	def __init__(self, led_pin, callback=None):
+		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(led_pin, GPIO.OUT)
 		self.led_pin = led_pin
 
