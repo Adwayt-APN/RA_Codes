@@ -3,7 +3,7 @@ import logging, os, inspect, logging.handlers
 import board
 import adafruit_shtc3
 import Adafruit_SSD1306
-import sps30
+#import sps30
 import DBSETUP  # import the db setup
 
 from PIL import Image
