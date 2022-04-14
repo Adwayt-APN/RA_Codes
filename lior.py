@@ -337,69 +337,57 @@ cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
 Disk = subprocess.check_output(cmd, shell = True )
 temperature, relative_humidity = sht.measurements
 
-def main():
-	global IP, CPU, MemUsage, Disk, temperature, relative_humidity, obj_6713, sps, cur_panel
-	green_led_status = 1
-	db_sample_start = time.time()
-	panel_start = time.time()
-	str_panel_start = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(panel_start))
-	print(str_panel_start+": main started")
-	while True:
-		# Blink the green led
-		logging.debug('green_led_status'+str(green_led_status))
-		green_led.set_led(green_led_status)
-		green_led_status = 0 if green_led_status else 1 
+
+global IP, CPU, MemUsage, Disk, temperature, relative_humidity, obj_6713, sps, cur_panel
+green_led_status = 1
+db_sample_start = time.time()
+panel_start = time.time()
+str_panel_start = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(panel_start))
+print(str_panel_start+": main started")
+while True:
+	# Blink the green led
+	logging.debug('green_led_status'+str(green_led_status))
+	green_led.set_led(green_led_status)
+	green_led_status = 0 if green_led_status else 1 
 		
-		# Draw a black filled box to clear the image.
-		draw.rectangle((0,0,width,height), outline=0, fill=0)
+	# Draw a black filled box to clear the image.
+	draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-		# Shell scripts for system monitoring from here : https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
-		cmd = "hostname -I | cut -d\' \' -f1"
-		IP = subprocess.check_output(cmd, shell = True )
-		cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
-		CPU = subprocess.check_output(cmd, shell = True )
-		cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%sMB %.2f%%\", $3,$2,$3*100/$2 }'"
-		MemUsage = subprocess.check_output(cmd, shell = True )
-		cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
-		Disk = subprocess.check_output(cmd, shell = True )
+	# Shell scripts for system monitoring from here : https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
+	cmd = "hostname -I | cut -d\' \' -f1"
+	IP = subprocess.check_output(cmd, shell = True )
+	cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
+	CPU = subprocess.check_output(cmd, shell = True )
+	cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%sMB %.2f%%\", $3,$2,$3*100/$2 }'"
+	MemUsage = subprocess.check_output(cmd, shell = True )
+	cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
+	Disk = subprocess.check_output(cmd, shell = True )
 
-		# Get measurements
-		temperature, relative_humidity = sht.measurements
-		logging.debug('Reading SPS30 data')
-		try: 
-			if not sps.read_data_ready_flag():
-				if sps.read_data_ready_flag() == sps.DATA_READY_FLAG_ERROR:
-					raise Exception("DATA-READY FLAG CRC ERROR!")
-			elif sps.read_measured_values() == sps.MEASURED_VALUES_ERROR:
-				raise Exception("MEASURED VALUES CRC ERROR!")
-		except Exception as e:
-			raise Exception("SPS30: read_data_ready_flag raised exception: %s", e)		
-
-		# Set display
-		if (time.time()-panel_start > PANEL_DELAY):
-			cur_panel = (cur_panel+1) % PANEL_NUM
-			panel_start = time.time()
-		showPanel(cur_panel)
-
-		# Write measurements to the DB
-		if (time.time()-db_sample_start > DB_SAMPLE_PERIOD):
-			logging.debug('Writing samples to the DB')
-			saveResults()
-			db_sample_start = time.time()
-		
-		# Display image.
-		disp.image(image)
-		disp.display()
-		time.sleep(1)
-
-if __name__ == "__main__":
-	try:
-    GPIO.cleanup()
-    green_led.set_led(0)
-    red_led.set_led(1)
-		main()
+	# Get measurements
+	temperature, relative_humidity = sht.measurements
+	logging.debug('Reading SPS30 data')
+	try: 
+		if not sps.read_data_ready_flag():
+			if sps.read_data_ready_flag() == sps.DATA_READY_FLAG_ERROR:
+				raise Exception("DATA-READY FLAG CRC ERROR!")
+		elif sps.read_measured_values() == sps.MEASURED_VALUES_ERROR:
+			raise Exception("MEASURED VALUES CRC ERROR!")
 	except Exception as e:
-		green_led.set_led(0)
-		# red_led.set_led(1)
-		GPIO.cleanup()
-		logging.exception("main crashed. Error: %s", e)
+		raise Exception("SPS30: read_data_ready_flag raised exception: %s", e)		
+
+	# Set display
+	if (time.time()-panel_start > PANEL_DELAY):
+		cur_panel = (cur_panel+1) % PANEL_NUM
+		panel_start = time.time()
+	showPanel(cur_panel)
+
+	# Write measurements to the DB
+	if (time.time()-db_sample_start > DB_SAMPLE_PERIOD):
+		logging.debug('Writing samples to the DB')
+		saveResults()
+		db_sample_start = time.time()
+		
+	# Display image.
+	disp.image(image)
+	disp.display()
+	time.sleep(1)
