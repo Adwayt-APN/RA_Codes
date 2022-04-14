@@ -326,6 +326,7 @@ def saveResults():
 	DBSETUP.ganacheLogger(float(sps.dict_values['nc10p0']), "AQ_NC10", "1/cm3", "MAC_AQ_9", "unit_descrip", "SPS30", "Sensirion")
 	DBSETUP.ganacheLogger(float(sps.dict_values['typical']), "AQ_NC0_TYPICAL", "µm", "MAC_AQ_10", "unit_descrip", "SPS30", "Sensirion")
 
+global IP, CPU, MemUsage, Disk, temperature, relative_humidity, obj_6713, sps, cur_panel
 # Global vars
 cmd = "hostname -I | cut -d\' \' -f1"
 IP = subprocess.check_output(cmd, shell = True )
@@ -338,7 +339,6 @@ Disk = subprocess.check_output(cmd, shell = True )
 temperature, relative_humidity = sht.measurements
 
 
-global IP, CPU, MemUsage, Disk, temperature, relative_humidity, obj_6713, sps, cur_panel
 green_led_status = 1
 db_sample_start = time.time()
 panel_start = time.time()
