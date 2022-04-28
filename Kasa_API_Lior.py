@@ -1,10 +1,27 @@
 #!/usr/bin/python
+import math, struct, array, time, io, fcntl
+import logging, os, inspect, logging.handlers
+import board
+import adafruit_shtc3
+import Adafruit_SSD1306
+#import sps30
+import DBSETUP  # import the db setup
+
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+
+import subprocess
+
+# for the leds and buttons
+import RPi.GPIO as GPIO
+
 import requests, secrets, json
 
 api_url = "https://wap.tplinkcloud.com"
 
-username = "tagore@seas.upenn.edu"
-password = "YouAreAWizardHarry"
+username = "blockpennplug1@gmail.com"
+password = "KasaPlug_779901"
 
 def create_random_uuid():
     uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
@@ -96,10 +113,13 @@ dev_mv = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime
 dev_mw = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['power_mw']
 dev_wh = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['total_wh']
 dev_e_err = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['err_code']
-print(str("dev_ma: %0.2f A" % (dev_ma/1000)))
-print(str("dev_mv: %0.2f V" % (dev_mv/1000)))
-print(str("dev_mw: %0.2f W" % (dev_mw/1000)))
-print(str("dev_wh: %0.2f W/H" % (dev_wh/1000)))
+#print(str("dev_ma: %0.2f A" % (dev_ma/1000)))
+#print(str("dev_mv: %0.2f V" % (dev_mv/1000)))
+#print(str("dev_mw: %0.2f W" % (dev_mw/1000)))
+#print(str("dev_wh: %0.2f W/H" % (dev_wh/1000)))
+
+
+
 #  {'error_code': 0, 
 #  'result': 
 #     {'responseData': 
