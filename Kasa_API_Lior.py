@@ -84,40 +84,47 @@ def set_dev_state_emeter(token, sel_device_id):
 
 # Authenticate and get token
 uuid = create_random_uuid()
-print("uuid:",uuid)
+#print("uuid:",uuid)
+
 [response_code, kasa_token] = get_auth_token(uuid, username, password)
-if (response_code == 200): print("Auth success!")
-print("kasa_token", kasa_token)
+#if (response_code == 200): #print("Auth success!")
+#print("kasa_token", kasa_token)
 # kasa_token = set the token here if you already have one
 # Get device list
 [response_code, err_code, dev_list] = get_dev_list(kasa_token)
-if (response_code == 200): print("List success!")
-if (err_code == 0): print("List has no errors")
-print("Identified # of devices:",len(dev_list))
+#if (response_code == 200): print("List success!")
+#if (err_code == 0): print("List has no errors")
+#print("Identified # of devices:",len(dev_list))
 
 # Select device and turn it off
 sel_device = dev_list[0]
-print("sel_device", sel_device["deviceId"])
+#print("sel_device", sel_device["deviceId"])
 sel_device_id = sel_device["deviceId"]
 sel_device_state = 1
 [response_code, err_code] = set_dev_state(kasa_token, sel_device_id, sel_device_state)
-if (response_code == 200): print("Set success!")
-if (err_code == 0): print("Set has no errors")
+#if (response_code == 200): print("Set success!")
+#if (err_code == 0): print("Set has no errors")
 
-[response_code, err_code, json_resp] = set_dev_state_emeter(kasa_token, sel_device_id)
-if (response_code == 200): print("Set success!")
-if (err_code == 0): print("Set has no errors")
 
-dev_ma = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['current_ma']
-dev_mv = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['voltage_mv']
-dev_mw = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['power_mw']
-dev_wh = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['total_wh']
-dev_e_err = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['err_code']
+while True:
+    [response_code, err_code, json_resp] = set_dev_state_emeter(kasa_token, sel_device_id)
+#if (response_code == 200): print("Set success!")
+#if (err_code == 0): print("Set has no errors")
+
+    dev_ma = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['current_ma']
+    dev_mv = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['voltage_mv']
+    dev_mw = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['power_mw']
+    dev_wh = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['total_wh']
+    dev_e_err = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['err_code']
 #print(str("dev_ma: %0.2f A" % (dev_ma/1000)))
 #print(str("dev_mv: %0.2f V" % (dev_mv/1000)))
 #print(str("dev_mw: %0.2f W" % (dev_mw/1000)))
 #print(str("dev_wh: %0.2f W/H" % (dev_wh/1000)))
 
+    DBSETUP.ganacheLogger(float(dev_ma/1000), "Current_Amps_1", "A", "MAC_A", "unit_descrip", "Kasa", "Kasa")	
+    DBSETUP.ganacheLogger(float(dev_mv/1000), "Voltage_V_1", "V", "MAC_V", "unit_descrip", "Kasa", "Kasa")
+    DBSETUP.ganacheLogger(float(dev_mw/1000), "Power_W_1", "W", "MAC_W", "unit_descrip", "Kasa", "Kasa")
+    DBSETUP.ganacheLogger(float(dev_wh/1000), "Energy_W/H_1", " W/H", "MAC_WH", "unit_descrip", "Kasa", "Kasa                                                                                                                                               ")
 
 
 #  {'error_code': 0, 
