@@ -5,50 +5,8 @@ from influxdb import InfluxDBClient
 from datetime import datetime
 import time
 import requests, secrets, json
+import DBSETUP 
 
-# DB Variables
-DB_VAR_IP = '127.0.0.1'
-DB_VAR_PORT = 8086
-DB_VAR_USER = 'root'
-DB_VAR_PASS = 'root'
-DB_VAR_DB_NAME = 'db0' #'Meyerson_Deployment'
-
-def createDatabase():
-    client = InfluxDBClient(DB_VAR_IP, DB_VAR_PORT, DB_VAR_USER, DB_VAR_PASS, DB_VAR_DB_NAME)
-    client.create_database(DB_VAR_DB_NAME)
-    return client
-
-client = createDatabase()
-
-def ganacheLogger(data, Measurement, Unit, MAC_Address, unit_descrip, sensor_name, mfg_name):
-    global client
-    # This is per data Transmission
-    json_body = []
-    current_time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-    json_body.append(
-        {
-            "measurement": Measurement,         # CO2, Temp, etc 
-            "tags": {
-                "ProjectID": "“BlockPenn”",            # CharacterString, project identifier, eg. “BlockPenn”
-                "ProjectDeployment": "Deployment 1",        # CharacterString, phase of the project
-                "UnitDescription": unit_descrip,        # CharacterString, e.g. "degree Celsius"
-                "UnitSymbol": Unit,        # CharacterString, e.g. "°C"
-                "MACAddress": MAC_Address,            # CharacterString
-                "TimeZone": "Philadelphia",            # CharacterString
-                "Address": "1908 Mt Vernon St",                 # CharacterString
-                "BuildingID": "N/A",                   # CharacterString
-                "BuildingName": "Max's Apartment",               # CharacterString
-                "RoomNumber": "3F",       # CharacterString
-                "SensorName": sensor_name,               # CharacterString, eg. DHT22
-                "SensorManufacturer": mfg_name        # CharacterString, company name
-            },
-            "LocalTime": current_time,              # TM_Instant (ISO 8601 Time string) '%Y-%m-%dT%H:%M:%SZ' 
-            "fields": {
-                "value": data           # Any
-            }
-        }
-    )
-    client.write_points(json_body)
 
 api_url = "https://wap.tplinkcloud.com"
 username = "blah"
@@ -152,9 +110,12 @@ while True:
     print(str("dev_mv: %0.2f V" % (dev_mv/1000)))
     print(str("dev_mw: %0.2f W" % (dev_mw/1000)))
     print(str("dev_wh: %0.2f W/H" % (dev_wh/1000)))
+    
+    DBSETUP.ganacheLogger(float(dev_ma/1000), "Current_Reading", "A", "MAC_CO2_ABC", "unit_descrip", "Kasa", "TPLink")
+    DBSETUP.ganacheLogger(float(dev_mv/1000), "Voltage_Reading", "V", "MAC_CO2_ABC", "unit_descrip", "Kasa", "TPLink")
+    DBSETUP.ganacheLogger(float(dev_mw/1000), "Power_Reading", "W", "MAC_CO2_ABC", "unit_descrip", "Kasa", "TPLink")
+    DBSETUP.ganacheLogger(float(dev_wh/1000), "Energy_Reading", "W/H", "MAC_CO2_ABC", "unit_descrip", "Kasa", "TPLink")
+    
+    print("Logging Successful!")
 
-    ganacheLogger(float(dev_ma/1000), "Current Reading", "A", "MAC_DETKIN", "MAC_DETKIN", "MAC_DETKIN", "KASA")
-    ganacheLogger(float(dev_mv/1000), "Voltage Reading", "V", "MAC_DETKIN", "MAC_DETKIN", "MAC_DETKIN", "KASA")
-    ganacheLogger(float(dev_mw/1000), "Power Reading", "W", "MAC_DETKIN", "MAC_DETKIN", "MAC_DETKIN", "KASA")
-    ganacheLogger(float(dev_wh/1000), "Energy Reading", "W/H", "MAC_DETKIN", "MAC_DETKIN", "MAC_DETKIN", "KASA")
-    time.sleep(1)
+    time.sleep(2)
