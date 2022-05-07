@@ -15,6 +15,72 @@ import subprocess
 # for the leds and buttons
 import RPi.GPIO as GPIO # Import RPi.GPIO library
 
+import requests, secrets, json
+
+api_url = "https://wap.tplinkcloud.com"
+username = "blah"
+password = "YouAreAWizardHarry"
+
+def create_random_uuid():
+    uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+    uuid = list(uuid)
+
+    uuid_sec = secrets.token_hex(36)
+
+    for uuid_index,uuid_char in enumerate(uuid):
+        r = uuid_sec[uuid_index]
+        d = int(r,16) & 0x3 | 0x8
+    #    (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+        if (uuid_char == "x"):
+            uuid[uuid_index] = r
+        elif (uuid_char == "y"):
+            uuid[uuid_index] = format(d,'01x')
+
+    uuid = "".join(uuid)
+    return uuid
+
+def get_auth_token(uuid, username, password):
+    auth_obj = {
+        "method": "login", 
+        "params": {
+            "appType": "Kasa_Mac",
+            "cloudUserName": username,
+            "cloudPassword": password,
+            "terminalUUID": uuid,
+        }
+    }
+
+    response = requests.post(api_url+"/", json=auth_obj)
+#    if (response.status_code == 200): print("Auth success!")
+    kasa_token = response.json()["result"]["token"]
+    return response.status_code, kasa_token
+
+def get_dev_list(token):
+    dev_obj = {"method": "getDeviceList"}
+    response = requests.post(api_url+"?token="+token, json=dev_obj)
+    return response.status_code, response.json()["error_code"], response.json()["result"]["deviceList"]
+
+def set_dev_state(token, sel_device_id, sel_device_state):
+    set_obj = {
+        "method": "passthrough", "params": {
+            "deviceId": sel_device_id,
+            "requestData": "{\"system\":{\"set_relay_state\":{\"state\":" + str(sel_device_state) + "}}}"
+        }
+    }
+    response = requests.post(api_url+"?token="+token, json=set_obj)
+    return response.status_code, response.json()["error_code"]
+
+def set_dev_state_emeter(token, sel_device_id):
+    set_obj = {
+        "method": "passthrough", "params": {
+            "deviceId": sel_device_id,
+            "requestData": "{\"system\":{\"get_sysinfo\":null},\"emeter\":{\"get_realtime\":null}}"
+        }
+    }
+    response = requests.post(api_url+"?token="+token, json=set_obj)
+    return response.status_code, response.json()["error_code"], response.json()
+
+
 
 global IP, CPU, MemUsage, Disk, temperature, relative_humidity, obj_6713, sps, cur_panel
 
@@ -30,13 +96,39 @@ LBTN_PIN = 4 # Bottom, pull-down
 RBTN_PIN = 27 # Into the center of the PCB, pull-down
 
 
-
 GPIO.setup(LED1_PIN, GPIO.OUT)
 GPIO.setup(LED2_PIN, GPIO.OUT)
 GPIO.setup(LBTN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(RBTN_PIN,  GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 
+uuid = create_random_uuid()
+print("uuid:",uuid)
+
+[response_code, kasa_token] = get_auth_token(uuid, username, password)
+if (response_code == 200): print("Auth success!")
+print("kasa_token", kasa_token)
+kasa_token = set the token here if you already have one
+# Get device list
+[response_code, err_code, dev_list] = get_dev_list(kasa_token)
+if (response_code == 200): print("List success!")
+if (err_code == 0): print("List has no errors")
+print("Identified # of devices:",len(dev_list))
+
+# Select device and turn it off
+sel_device = dev_list[0]
+print("sel_device", sel_device["deviceId"])
+sel_device_id = sel_device["deviceId"]
+sel_device_state = 1
+[response_code, err_code] = set_dev_state(kasa_token, sel_device_id, sel_device_state)
+if (response_code == 200): print("Set success!")
+if (err_code == 0): print("Set has no errors")
+
+
+
+[response_code, err_code, json_resp] = set_dev_state_emeter(kasa_token, sel_device_id)
+if (response_code == 200): print("Set success!")
+if (err_code == 0): print("Set has no errors")
 
 # Start logging
 log_fname = os.path.splitext(os.path.basename(__file__))[0]+".log"
@@ -316,10 +408,25 @@ def showPanel(panel_id):
 #		print ("NC10.0 Value in 1/cm3: " + str(sps.dict_values['nc10p0']))
 
 def saveResults():
+	dev_ma = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['current_ma']
+	dev_mv = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['voltage_mv']
+	dev_mw = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['power_mw']
+	dev_wh = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['total_wh']
+	dev_e_err = json.loads(json_resp['result']['responseData'])['emeter']['get_realtime']['err_code']
+	
 	DBSETUP.ganacheLogger(float(temperature), "Temperature", "C", "MAC_T", "unit_descrip", "SHTC3", "Sensirion")	
 	DBSETUP.ganacheLogger(float(relative_humidity), "Humidity", "%", "MAC_H", "unit_descrip", "SHTC3", "Sensirion")
 	DBSETUP.ganacheLogger(float(obj_6713.gasPPM()), "CO2 Concentration", "PPM", "MAC_CO2", "unit_descrip", "T6713", "Amphenol Advanced Sensors")
 	DBSETUP.ganacheLogger(float(obj_6713.checkABC()), "CO2 ABC State", " ", "MAC_CO2_ABC", "unit_descrip", "T6713", "Amphenol Advanced Sensors")
+	
+	DBSETUP.ganacheLogger(float(dev_ma/1000), "Current", "A", "MAC_C", "unit_descrip", "Kasa", "TPLink")	
+	DBSETUP.ganacheLogger(float(dev_mv/1000), "Voltage", "V", "MAC_V", "unit_descrip", "Kasa", "TPLink")
+	DBSETUP.ganacheLogger(float(dev_mw/1000), "Power", "W", "MAC_P", "unit_descrip", "Kasa", "TPLink")
+	DBSETUP.ganacheLogger(float(dev_mh/1000), "Energy", "W/H", "MAC_E", "unit_descrip", "Kasa", "TPLink")
+	
+	
+	
+	
 	#DBSETUP.ganacheLogger(float(sps.dict_values['pm1p0']), "AQ_PM1.0", "µg/m3", "MAC_AQ_1", "unit_descrip", "SPS30", "Sensirion")
 	#DBSETUP.ganacheLogger(float(sps.dict_values['pm2p5']), "AQ_PM2.5", "µg/m3", "MAC_AQ_2", "unit_descrip", "SPS30", "Sensirion")
 	#DBSETUP.ganacheLogger(float(sps.dict_values['pm4p0']), "AQ_PM4", "µg/m3", "MAC_AQ_3", "unit_descrip", "SPS30", "Sensirion")
