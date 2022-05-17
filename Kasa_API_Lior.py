@@ -20,8 +20,8 @@ import requests, secrets, json
 
 api_url = "https://wap.tplinkcloud.com"
 
-username = "blockpennplug1@gmail.com"
-password = "KasaPlug_779901"
+username = "blah"
+password = "blah"
 
 def create_random_uuid():
     uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
