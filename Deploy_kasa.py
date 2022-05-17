@@ -86,7 +86,7 @@ if (err_code == 0): print("List has no errors")
 print("Identified # of devices:",len(dev_list))
 
 # Select device and turn it off
-sel_device = dev_list[0]
+sel_device = dev_list[0] # this right here
 print("sel_device", sel_device["deviceId"])
 sel_device_id = sel_device["deviceId"]
 sel_device_state = 1
